@@ -1,7 +1,7 @@
-// postcss.config.js
+// ✅ Correct for Node.js build systems
 module.exports = {
   plugins: {
-    tailwindcss: {},
+    '@tailwindcss/postcss': {},
     autoprefixer: {},
   },
 }
