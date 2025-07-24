@@ -1,7 +1,9 @@
-// ✅ Correct for Node.js build systems
-module.exports = {
+/** @type {import('postcss-load-config').Config} */
+const config = {
   plugins: {
     '@tailwindcss/postcss': {},
     autoprefixer: {},
   },
 }
+
+export default config
