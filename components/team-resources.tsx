@@ -189,45 +189,6 @@ const toolsPlatforms = [
   },
 ]
 
-const trainingDevelopment = [
-  {
-    title: "Strategic Thinking Masterclass",
-    provider: "LinkedIn Learning",
-    duration: "4 hours",
-    category: "Strategy",
-    completed: 8,
-    total: 12,
-    dueDate: "Apr 2024",
-  },
-  {
-    title: "Data-Driven Decision Making",
-    provider: "Coursera",
-    duration: "6 weeks",
-    category: "Analytics",
-    completed: 5,
-    total: 12,
-    dueDate: "May 2024",
-  },
-  {
-    title: "Design Thinking Workshop",
-    provider: "IDEO U",
-    duration: "2 days",
-    category: "Innovation",
-    completed: 12,
-    total: 12,
-    dueDate: "Completed",
-  },
-  {
-    title: "Client Presentation Skills",
-    provider: "Internal Training",
-    duration: "1 day",
-    category: "Communication",
-    completed: 3,
-    total: 12,
-    dueDate: "Jun 2024",
-  },
-]
-
 const credentials = [
   {
     service: "Adobe Creative Suite",
@@ -268,38 +229,56 @@ const credentials = [
 
 export function TeamResources() {
   return (
-    <Card className="bg-white dark:bg-slate-900 shadow-md rounded-2xl border-0 relative overflow-hidden">
-      <div className="absolute top-0 left-0 w-40 h-40 bg-gradient-to-br from-emerald-100/20 to-transparent dark:from-emerald-500/10 rounded-full -translate-y-20 -translate-x-20"></div>
+    <Card className="bg-slate-900 border-slate-800 shadow-lg rounded-2xl relative overflow-hidden">
+      <div className="absolute top-0 left-0 w-40 h-40 bg-gradient-to-br from-emerald-500/10 to-transparent rounded-full -translate-y-20 -translate-x-20"></div>
       <CardHeader className="relative">
-        <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-gray-100">
-          <Book className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+        <CardTitle className="flex items-center gap-2 text-white">
+          <Book className="h-5 w-5 text-emerald-400" />
           Team Resources
         </CardTitle>
       </CardHeader>
       <CardContent>
         <Tabs defaultValue="client" className="w-full">
-          <TabsList className="grid w-full grid-cols-6 text-xs">
-            <TabsTrigger value="client" className="flex items-center gap-1">
+          <TabsList className="grid w-full grid-cols-6 text-xs bg-slate-800 border-slate-700">
+            <TabsTrigger
+              value="client"
+              className="flex items-center gap-1 text-slate-400 data-[state=active]:bg-slate-700 data-[state=active]:text-white hover:text-slate-300"
+            >
               <Users className="h-3 w-3" />
               Client
             </TabsTrigger>
-            <TabsTrigger value="research" className="flex items-center gap-1">
+            <TabsTrigger
+              value="research"
+              className="flex items-center gap-1 text-slate-400 data-[state=active]:bg-slate-700 data-[state=active]:text-white hover:text-slate-300"
+            >
               <TrendingUp className="h-3 w-3" />
               Research
             </TabsTrigger>
-            <TabsTrigger value="templates" className="flex items-center gap-1">
+            <TabsTrigger
+              value="templates"
+              className="flex items-center gap-1 text-slate-400 data-[state=active]:bg-slate-700 data-[state=active]:text-white hover:text-slate-300"
+            >
               <Target className="h-3 w-3" />
               Templates
             </TabsTrigger>
-            <TabsTrigger value="brand" className="flex items-center gap-1">
+            <TabsTrigger
+              value="brand"
+              className="flex items-center gap-1 text-slate-400 data-[state=active]:bg-slate-700 data-[state=active]:text-white hover:text-slate-300"
+            >
               <Palette className="h-3 w-3" />
               Brand
             </TabsTrigger>
-            <TabsTrigger value="tools" className="flex items-center gap-1">
+            <TabsTrigger
+              value="tools"
+              className="flex items-center gap-1 text-slate-400 data-[state=active]:bg-slate-700 data-[state=active]:text-white hover:text-slate-300"
+            >
               <Globe className="h-3 w-3" />
               Tools
             </TabsTrigger>
-            <TabsTrigger value="access" className="flex items-center gap-1">
+            <TabsTrigger
+              value="access"
+              className="flex items-center gap-1 text-slate-400 data-[state=active]:bg-slate-700 data-[state=active]:text-white hover:text-slate-300"
+            >
               <Key className="h-3 w-3" />
               Access
             </TabsTrigger>
@@ -308,26 +287,24 @@ export function TeamResources() {
           <TabsContent value="client" className="mt-6">
             <div className="space-y-4">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">Client Resources & Templates</h3>
-                <Badge variant="outline" className="text-xs">
+                <h3 className="text-sm font-medium text-slate-300">Client Resources & Templates</h3>
+                <Badge className="text-xs bg-slate-800 text-slate-300 border-slate-700">
                   {clientResources.length} items
                 </Badge>
               </div>
               {clientResources.map((item, index) => (
                 <div
                   key={index}
-                  className="bg-gray-50 dark:bg-slate-800 rounded-xl p-4 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors border-l-4 border-blue-200 dark:border-blue-700"
+                  className="bg-slate-800 border border-slate-700 rounded-xl p-4 hover:bg-slate-750 transition-all duration-200 border-l-4 border-l-blue-500"
                 >
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
-                        <h4 className="font-medium text-gray-900 dark:text-gray-100">{item.title}</h4>
-                        <Badge variant={item.status === "Active" ? "default" : "secondary"} className="text-xs">
-                          {item.status}
-                        </Badge>
+                        <h4 className="font-medium text-white">{item.title}</h4>
+                        <Badge className="text-xs bg-blue-600 text-white border-0">{item.status}</Badge>
                       </div>
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">{item.description}</p>
-                      <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-500">
+                      <p className="text-sm text-slate-400 mb-2">{item.description}</p>
+                      <div className="flex items-center gap-2 text-xs text-slate-500">
                         <span>{item.client}</span>
                         <span>•</span>
                         <span>{item.date}</span>
@@ -338,7 +315,7 @@ export function TeamResources() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="p-2 h-auto text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
+                      className="p-2 h-auto text-blue-400 hover:text-blue-300 hover:bg-slate-700"
                     >
                       <ExternalLink className="h-4 w-4" />
                     </Button>
@@ -351,40 +328,34 @@ export function TeamResources() {
           <TabsContent value="research" className="mt-6">
             <div className="space-y-4">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Market Research & Industry Data
-                </h3>
-                <Badge variant="outline" className="text-xs">
+                <h3 className="text-sm font-medium text-slate-300">Market Research & Industry Data</h3>
+                <Badge className="text-xs bg-slate-800 text-slate-300 border-slate-700">
                   {researchData.length} reports
                 </Badge>
               </div>
               {researchData.map((item, index) => (
                 <div
                   key={index}
-                  className="bg-gray-50 dark:bg-slate-800 rounded-xl p-4 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors border-l-4 border-purple-200 dark:border-purple-700"
+                  className="bg-slate-800 border border-slate-700 rounded-xl p-4 hover:bg-slate-750 transition-all duration-200 border-l-4 border-l-purple-500"
                 >
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex-1">
-                      <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-1">{item.title}</h4>
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">{item.description}</p>
-                      <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-500">
+                      <h4 className="font-medium text-white mb-1">{item.title}</h4>
+                      <p className="text-sm text-slate-400 mb-2">{item.description}</p>
+                      <div className="flex items-center gap-2 text-xs text-slate-500">
                         <span>{item.source}</span>
                         <span>•</span>
                         <span>{item.date}</span>
                         <span>•</span>
-                        <Badge variant="outline" className="text-xs">
-                          {item.industry}
-                        </Badge>
+                        <Badge className="text-xs bg-slate-700 text-slate-300 border-slate-600">{item.industry}</Badge>
                       </div>
                     </div>
                     <div className="flex items-center gap-2 ml-4">
-                      <Badge variant="outline" className="text-xs">
-                        {item.type}
-                      </Badge>
+                      <Badge className="text-xs bg-slate-700 text-slate-300 border-slate-600">{item.type}</Badge>
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="p-2 h-auto text-purple-600 dark:text-purple-400 hover:text-purple-800 dark:hover:text-purple-300"
+                        className="p-2 h-auto text-purple-400 hover:text-purple-300 hover:bg-slate-700"
                       >
                         <ExternalLink className="h-4 w-4" />
                       </Button>
@@ -398,10 +369,8 @@ export function TeamResources() {
           <TabsContent value="templates" className="mt-6">
             <div className="space-y-4">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Strategy Templates & Frameworks
-                </h3>
-                <Badge variant="outline" className="text-xs">
+                <h3 className="text-sm font-medium text-slate-300">Strategy Templates & Frameworks</h3>
+                <Badge className="text-xs bg-slate-800 text-slate-300 border-slate-700">
                   {templatesFrameworks.length} templates
                 </Badge>
               </div>
@@ -409,21 +378,19 @@ export function TeamResources() {
                 {templatesFrameworks.map((item, index) => (
                   <div
                     key={index}
-                    className="bg-gray-50 dark:bg-slate-800 rounded-xl p-4 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors border-l-4 border-green-200 dark:border-green-700"
+                    className="bg-slate-800 border border-slate-700 rounded-xl p-4 hover:bg-slate-750 transition-all duration-200 border-l-4 border-l-green-500"
                   >
                     <div className="flex items-start justify-between mb-2">
                       <div className="flex-1">
-                        <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-1">{item.title}</h4>
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">{item.description}</p>
+                        <h4 className="font-medium text-white mb-1">{item.title}</h4>
+                        <p className="text-sm text-slate-400 mb-2">{item.description}</p>
                         <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-500">
+                          <div className="flex items-center gap-2 text-xs text-slate-500">
                             <span>Updated {item.lastUpdated}</span>
                             <span>•</span>
                             <span>{item.downloads} downloads</span>
                           </div>
-                          <Badge variant="secondary" className="text-xs">
-                            {item.type}
-                          </Badge>
+                          <Badge className="text-xs bg-slate-700 text-slate-300 border-slate-600">{item.type}</Badge>
                         </div>
                       </div>
                     </div>
@@ -436,8 +403,8 @@ export function TeamResources() {
           <TabsContent value="brand" className="mt-6">
             <div className="space-y-4">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">Brand & Creative Resources</h3>
-                <Badge variant="outline" className="text-xs">
+                <h3 className="text-sm font-medium text-slate-300">Brand & Creative Resources</h3>
+                <Badge className="text-xs bg-slate-800 text-slate-300 border-slate-700">
                   {brandCreative.length} resources
                 </Badge>
               </div>
@@ -445,16 +412,16 @@ export function TeamResources() {
                 {brandCreative.map((item, index) => (
                   <div
                     key={index}
-                    className="bg-gray-50 dark:bg-slate-800 rounded-xl p-4 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors border-l-4 border-pink-200 dark:border-pink-700"
+                    className="bg-slate-800 border border-slate-700 rounded-xl p-4 hover:bg-slate-750 transition-all duration-200 border-l-4 border-l-pink-500"
                   >
                     <div className="flex items-start gap-3">
                       <div className="text-2xl">🎨</div>
                       <div className="flex-1">
-                        <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-1">{item.name}</h4>
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">{item.description}</p>
+                        <h4 className="font-medium text-white mb-1">{item.name}</h4>
+                        <p className="text-sm text-slate-400 mb-2">{item.description}</p>
                         <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-500">
-                            <Badge variant="secondary" className="text-xs">
+                          <div className="flex items-center gap-2 text-xs text-slate-500">
+                            <Badge className="text-xs bg-slate-700 text-slate-300 border-slate-600">
                               {item.category}
                             </Badge>
                             <span>•</span>
@@ -463,7 +430,7 @@ export function TeamResources() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="p-0 h-auto text-pink-600 dark:text-pink-400 hover:text-pink-800 dark:hover:text-pink-300"
+                            className="p-0 h-auto text-pink-400 hover:text-pink-300 hover:bg-slate-700"
                           >
                             <ExternalLink className="h-3 w-3 mr-1" />
                             Open
@@ -480,8 +447,8 @@ export function TeamResources() {
           <TabsContent value="tools" className="mt-6">
             <div className="space-y-4">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">Tools & Platforms</h3>
-                <Badge variant="outline" className="text-xs">
+                <h3 className="text-sm font-medium text-slate-300">Tools & Platforms</h3>
+                <Badge className="text-xs bg-slate-800 text-slate-300 border-slate-700">
                   {toolsPlatforms.length} tools
                 </Badge>
               </div>
@@ -489,21 +456,19 @@ export function TeamResources() {
                 {toolsPlatforms.map((tool, index) => (
                   <div
                     key={index}
-                    className="bg-gray-50 dark:bg-slate-800 rounded-xl p-4 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors border-l-4 border-indigo-200 dark:border-indigo-700"
+                    className="bg-slate-800 border border-slate-700 rounded-xl p-4 hover:bg-slate-750 transition-all duration-200 border-l-4 border-l-indigo-500"
                   >
                     <div className="flex items-start gap-3">
                       <div className="text-2xl">🛠️</div>
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
-                          <h4 className="font-medium text-gray-900 dark:text-gray-100">{tool.name}</h4>
-                          <Badge variant={tool.status === "Active" ? "default" : "secondary"} className="text-xs">
-                            {tool.status}
-                          </Badge>
+                          <h4 className="font-medium text-white">{tool.name}</h4>
+                          <Badge className="text-xs bg-green-600 text-white border-0">{tool.status}</Badge>
                         </div>
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">{tool.description}</p>
+                        <p className="text-sm text-slate-400 mb-2">{tool.description}</p>
                         <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-500">
-                            <Badge variant="secondary" className="text-xs">
+                          <div className="flex items-center gap-2 text-xs text-slate-500">
+                            <Badge className="text-xs bg-slate-700 text-slate-300 border-slate-600">
                               {tool.category}
                             </Badge>
                             <span>•</span>
@@ -512,7 +477,7 @@ export function TeamResources() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="p-0 h-auto text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300"
+                            className="p-0 h-auto text-indigo-400 hover:text-indigo-300 hover:bg-slate-700"
                           >
                             <ExternalLink className="h-3 w-3 mr-1" />
                             Open
@@ -528,19 +493,19 @@ export function TeamResources() {
 
           <TabsContent value="access" className="mt-6">
             <div className="space-y-4">
-              <div className="bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3 mb-4">
-                <div className="flex items-center gap-2 text-yellow-800 dark:text-yellow-200">
+              <div className="bg-yellow-900/20 border border-yellow-700/50 rounded-lg p-3 mb-4">
+                <div className="flex items-center gap-2 text-yellow-300">
                   <Zap className="h-4 w-4" />
                   <span className="text-sm font-medium">Security Notice</span>
                 </div>
-                <p className="text-xs text-yellow-700 dark:text-yellow-300 mt-1">
+                <p className="text-xs text-yellow-400 mt-1">
                   Never share passwords in public channels. Use the team password manager for sensitive credentials.
                 </p>
               </div>
 
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">Team Access & Credentials</h3>
-                <Badge variant="outline" className="text-xs">
+                <h3 className="text-sm font-medium text-slate-300">Team Access & Credentials</h3>
+                <Badge className="text-xs bg-slate-800 text-slate-300 border-slate-700">
                   {credentials.length} accounts
                 </Badge>
               </div>
@@ -548,22 +513,20 @@ export function TeamResources() {
               {credentials.map((cred, index) => (
                 <div
                   key={index}
-                  className="bg-gray-50 dark:bg-slate-800 rounded-xl p-4 border-l-4 border-orange-200 dark:border-orange-700"
+                  className="bg-slate-800 border border-slate-700 rounded-xl p-4 border-l-4 border-l-cyan-500"
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
-                      <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-1">{cred.service}</h4>
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                        <span className="font-mono bg-gray-200 dark:bg-slate-700 px-2 py-1 rounded text-xs">
+                      <h4 className="font-medium text-white mb-1">{cred.service}</h4>
+                      <p className="text-sm text-slate-400 mb-1">
+                        <span className="font-mono bg-slate-700 border border-slate-600 px-2 py-1 rounded text-xs text-slate-300">
                           {cred.username}
                         </span>
                       </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-500 mb-1">{cred.note}</p>
-                      <p className="text-xs text-gray-400 dark:text-gray-600">Last updated: {cred.lastUpdated}</p>
+                      <p className="text-xs text-slate-500 mb-1">{cred.note}</p>
+                      <p className="text-xs text-slate-600">Last updated: {cred.lastUpdated}</p>
                     </div>
-                    <Badge variant="outline" className="text-xs ml-4">
-                      {cred.category}
-                    </Badge>
+                    <Badge className="text-xs bg-slate-700 text-slate-300 border-slate-600">{cred.category}</Badge>
                   </div>
                 </div>
               ))}
