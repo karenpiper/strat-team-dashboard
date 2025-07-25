@@ -25,6 +25,14 @@ function LoginForm() {
     setPassword(demoPassword)
     login(demoEmail, demoPassword) // This will now correctly call the login function from the hook
   }
+return (
+  <>
+    <div className="p-10 bg-green-500 text-white text-xl font-bold">
+      Tailwind is working!
+    </div>
+    <LoginForm />
+  </>
+)
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-purple-50 via-white to-blue-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
