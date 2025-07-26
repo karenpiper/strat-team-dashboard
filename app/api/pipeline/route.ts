@@ -1,112 +1,101 @@
-import { NextResponse } from "next/server"
+import { NextResponse } from 'next/server'
 
-// Mock data for business pipeline
-const mockPipelineData = [
-  {
-    id: "pipeline1",
-    name: "TechCorp Rebranding",
-    dueDate: "Mar 25",
-    owner: ["Karen J.", "Mike C."],
-    status: "In Progress",
-    statusColor: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
-    progress: 65,
-  },
-  {
-    id: "pipeline2",
-    name: "FinanceApp Strategy",
-    dueDate: "Mar 30",
-    owner: ["John D."],
-    status: "Review",
-    statusColor: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
-    progress: 85,
-  },
-  {
-    id: "pipeline3",
-    name: "Healthcare Market Analysis",
-    dueDate: "Apr 5",
-    owner: ["Jane S.", "Alex R."],
-    status: "Final Draft",
-    statusColor: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
-    progress: 95,
-  },
-  {
-    id: "pipeline4",
-    name: "Retail Expansion Plan",
-    dueDate: "Apr 10",
-    owner: ["Sarah M.", "Karen J."],
-    status: "Planning",
-    statusColor: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
-    progress: 30,
-  },
-  {
-    id: "pipeline5",
-    name: "Social Media Campaign",
-    dueDate: "Apr 15",
-    owner: ["Mike C.", "John D."],
-    status: "In Progress",
-    statusColor: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
-    progress: 50,
-  },
-]
-
-// Function to update progress randomly
-function getUpdatedPipeline() {
-  return mockPipelineData.map((item) => {
-    // Randomly increase progress by 0-5%
-    const progressIncrease = Math.floor(Math.random() * 6)
-    let newProgress = item.progress + progressIncrease
-
-    // Cap at 100%
-    if (newProgress > 100) newProgress = 100
-
-    // Update status based on progress
-    let status = item.status
-    let statusColor = item.statusColor
-
-    if (newProgress >= 100) {
-      status = "Complete"
-      statusColor = "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
-    } else if (newProgress >= 90) {
-      status = "Final Draft"
-      statusColor = "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
-    } else if (newProgress >= 75) {
-      status = "Review"
-      statusColor = "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
-    } else if (newProgress >= 25) {
-      status = "In Progress"
-      statusColor = "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
-    } else {
-      status = "Planning"
-      statusColor = "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200"
-    }
-
-    return {
-      ...item,
-      progress: newProgress,
-      status,
-      statusColor,
-    }
-  })
-}
-
-// Function to get random items from an array
-function getRandomItems<T>(array: T[], count: number): T[] {
-  const shuffled = [...array].sort(() => 0.5 - Math.random())
-  return shuffled.slice(0, count)
-}
+const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID
+const AIRTABLE_ACCESS_TOKEN = process.env.AIRTABLE_ACCESS_TOKEN
 
 export async function GET() {
   try {
-    // Simulate API delay
-    await new Promise((resolve) => setTimeout(resolve, 500))
+    const response = await fetch(
+      `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/Pipeline`,
+      {
+        headers: {
+          'Authorization': `Bearer ${AIRTABLE_ACCESS_TOKEN}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    )
 
-    // Get 3 random items with updated progress
-    const updatedPipeline = getUpdatedPipeline()
-    const randomPipeline = getRandomItems(updatedPipeline, 3)
+    if (!response.ok) {
+      throw new Error(`Airtable API error: ${response.status}`)
+    }
 
-    return NextResponse.json(randomPipeline)
+    const data = await response.json()
+    
+    // Transform the data to match what your app expects
+    const transformedRecords = data.records.map((record: any) => ({
+      id: record.id,
+      name: record.fields.Name || 'Untitled Project',
+      type: record.fields.Type || 'Project',
+      description: record.fields.Description || '',
+      dueDate: formatDate(record.fields['Due Date']),
+      lead: record.fields.Lead || 'Unassigned',
+      owner: Array.isArray(record.fields.Team) 
+        ? record.fields.Team 
+        : record.fields.Team 
+          ? [record.fields.Team] 
+          : [record.fields.Lead || 'Unassigned'],
+      status: record.fields.Status || 'Not Started',
+      statusColor: getStatusColor(record.fields.Status),
+      progress: calculateProgress(record.fields.Status),
+      notes: record.fields.Notes || '',
+      url: record.fields.URL || '',
+    }))
+
+    return NextResponse.json(transformedRecords)
   } catch (error) {
-    console.error("Pipeline API Error:", error)
-    return NextResponse.json([])
+    console.error('Error fetching pipeline data:', error)
+    return NextResponse.json(
+      { error: 'Failed to fetch pipeline data' },
+      { status: 500 }
+    )
+  }
+}
+
+function calculateProgress(status: string): number {
+  // Calculate progress based on status since you don't have a progress field
+  switch (status?.toLowerCase()) {
+    case 'not started':
+      return 0
+    case 'in progress':
+    case 'active':
+      return 65
+    case 'review':
+    case 'pending':
+      return 85
+    case 'completed':
+    case 'done':
+      return 100
+    default:
+      return 50
+  }
+}
+
+function formatDate(dateString: string): string {
+  if (!dateString) return 'No due date'
+  
+  const date = new Date(dateString)
+  return date.toLocaleDateString('en-US', { 
+    month: 'short', 
+    day: 'numeric' 
+  })
+}
+
+function getStatusColor(status: string): string {
+  switch (status?.toLowerCase()) {
+    case 'in progress':
+    case 'active':
+      return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+    case 'review':
+    case 'pending':
+      return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+    case 'completed':
+    case 'done':
+    case 'final draft':
+      return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+    case 'blocked':
+    case 'on hold':
+      return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+    default:
+      return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
   }
 }
