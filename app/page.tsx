@@ -1,14 +1,27 @@
 "use client"
 
 import type React from "react"
-
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
 import { AirtableUserProvider, useAirtableUser } from "@/use-airtable-user"
 import TeamDashboard from "@/components/team-dashboard"
+import { getAirtableRecords } from "@/lib/airtable" // Airtable utility
+import type { Record as AirtableRecord } from "airtable"
+
+// 👇 Optional: Define the Airtable fields structure
+type DashboardRecord = {
+  Title: string
+  [key: string]: any
+}
 
 function LoginForm() {
   const { login, isLoading, error } = useAirtableUser()
@@ -23,7 +36,7 @@ function LoginForm() {
   const handleDemoLogin = (demoEmail: string, demoPassword: string) => {
     setEmail(demoEmail)
     setPassword(demoPassword)
-    login(demoEmail, demoPassword) // This will now correctly call the login function from the hook
+    login(demoEmail, demoPassword)
   }
 
   return (
@@ -31,7 +44,9 @@ function LoginForm() {
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold text-center">Welcome Back</CardTitle>
-          <CardDescription className="text-center">Sign in to access your Strategy Team Dashboard</CardDescription>
+          <CardDescription className="text-center">
+            Sign in to access your Strategy Team Dashboard
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -106,12 +121,21 @@ function LoginForm() {
 
 function AppContent() {
   const { user } = useAirtableUser()
+  const [records, setRecords] = useState<AirtableRecord<DashboardRecord>[]>([])
+  const [loading, setLoading] = useState(true)
 
-  if (!user) {
-    return <LoginForm />
-  }
+  useEffect(() => {
+    if (user) {
+      getAirtableRecords("DashboardContent")
+        .then((res) => setRecords(res as AirtableRecord<DashboardRecord>[]))
+        .finally(() => setLoading(false))
+    }
+  }, [user])
 
-  return <TeamDashboard />
+  if (!user) return <LoginForm />
+  if (loading) return <div className="p-4 text-white">Loading dashboard...</div>
+
+  return <TeamDashboard records={records} />
 }
 
 export default function Page() {
