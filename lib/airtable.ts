@@ -1,22 +1,23 @@
-import Airtable from "airtable"
+import Airtable from "airtable";
 
-// Check for environment variables and provide fallbacks
-const accessToken = process.env.AIRTABLE_ACCESS_TOKEN
-const baseId = process.env.AIRTABLE_BASE_ID
+// Expect an API key, not an access token
+const apiKey = process.env.AIRTABLE_ACCESS_TOKEN;
+const baseId = process.env.AIRTABLE_BASE_ID;
 
-if (!accessToken) console.error('Missing AIRTABLE_ACCESS_TOKEN')
-if (!baseId) console.error('Missing AIRTABLE_BASE_ID')
+if (!apiKey) console.error('Missing AIRTABLE_ACCESS_TOKEN');
+if (!baseId) console.error('Missing AIRTABLE_BASE_ID');
 
 // Only initialize Airtable if we have the required credentials
-let base: any = null
+let base: any = null;
 
-if (accessToken && baseId) {
+if (apiKey && baseId) {
   try {
-    base = new Airtable({ accessToken }).base(baseId)
+    base = new Airtable({ apiKey }).base(baseId);  // ← this must be `apiKey`
   } catch (error) {
-    console.error('Failed to initialize Airtable:', error)
+    console.error('Failed to initialize Airtable:', error);
   }
 }
+
 
 export const getAirtableRecords = async (tableName: string) => {
   // Return empty array if Airtable isn't initialized
