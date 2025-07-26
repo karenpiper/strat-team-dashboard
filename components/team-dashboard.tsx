@@ -15,10 +15,37 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { UpdateIndicator } from "@/components/update-indicator"
 import { useLiveData } from "@/hooks/use-live-data"
 import { cn } from "@/lib/utils"
-import { Plus, Play, Calendar, Users, BookOpen, Music, Award, Clock, Figma, FileText, BarChart3, Settings, LogOut, Star, Sparkles, Camera, Headphones, ExternalLink, Briefcase, TrendingUp, Palette, Target, Lightbulb, Coffee, Heart } from 'lucide-react'
+import {
+  Plus,
+  Play,
+  Calendar,
+  Users,
+  BookOpen,
+  Music,
+  Award,
+  Clock,
+  Figma,
+  FileText,
+  BarChart3,
+  Settings,
+  LogOut,
+  Star,
+  Sparkles,
+  Camera,
+  Headphones,
+  ExternalLink,
+  Briefcase,
+  TrendingUp,
+  Palette,
+  Target,
+  Lightbulb,
+  Coffee,
+  Heart,
+} from "lucide-react"
 import { useAirtableUser } from "@/use-airtable-user"
 import { toast } from "sonner"
 import { TeamResources } from "@/components/team-resources"
+import { TeamAvatarGallery } from "@/components/team-avatar-gallery"
 
 // Types for our data
 interface Snap {
@@ -58,6 +85,12 @@ export default function TeamDashboard() {
 
   // Add this inside the component, after the existing state declarations
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([])
+  const [moments, setMoments] = useState([])
+  const [mustReads, setMustReads] = useState([])
+  const [recordings, setRecordings] = useState([])
+  const [bestOfWork, setBestOfWork] = useState([])
+  const [snapsData, setSnapsData] = useState([])
+  const [pipelineData, setPipelineData] = useState([])
 
   // Add this useEffect to fetch team members
   useEffect(() => {
@@ -66,7 +99,7 @@ export default function TeamDashboard() {
         const response = await fetch("/api/team")
         if (response.ok) {
           const data = await response.json()
-          setTeamMembers(data)
+          setTeamMembers(Array.isArray(data) ? data : [])
         }
       } catch (error) {
         console.error("Error fetching team members:", error)
@@ -98,26 +131,18 @@ export default function TeamDashboard() {
     if (!response.ok) throw new Error("Failed to fetch snaps")
     const data = await response.json()
 
-    // Transform the data to match our Snap interface
-    return data.map((item: any) => ({
-      id: item.id,
-      quote: item.fields.Quote,
-      author: item.fields.Author,
-      timestamp: new Date(item.fields.Date).toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        hour: "numeric",
-        minute: "2-digit",
-      }),
-      category: "Feedback",
-    }))
+    // Ensure we return an array
+    return Array.isArray(data) ? data : []
   }
 
   // Fetch pipeline data with live updates
   const fetchPipeline = async () => {
     const response = await fetch("/api/pipeline")
     if (!response.ok) throw new Error("Failed to fetch pipeline data")
-    return await response.json()
+    const data = await response.json()
+
+    // Ensure we return an array
+    return Array.isArray(data) ? data : []
   }
 
   // Initial mock data for snaps
@@ -208,8 +233,11 @@ export default function TeamDashboard() {
     refresh: refreshPipeline,
   } = useLiveData<PipelineItem[]>(fetchPipeline, initialPipeline, { interval: 20000 }) // 20 seconds
 
+  // Ensure businessPipeline is always an array
+  const safeBusinessPipeline = Array.isArray(businessPipeline) ? businessPipeline : initialPipeline
+
   // Get the latest 2 snaps for display
-  const latestSnaps = snaps.slice(0, 2)
+  const latestSnaps = Array.isArray(snaps) ? snaps.slice(0, 2) : initialSnaps.slice(0, 2)
 
   // Animation for progress bars when they update
   const [animatingItems, setAnimatingItems] = useState<Record<string | number, boolean>>({})
@@ -221,7 +249,7 @@ export default function TeamDashboard() {
     // Check if any pipeline items have changed progress
     const changedItems: Record<string | number, boolean> = {}
 
-    businessPipeline.forEach((item) => {
+    safeBusinessPipeline.forEach((item) => {
       const prevItem = prevPipelineRef.current.find((p) => p.id === item.id)
       if (prevItem && prevItem.progress !== item.progress) {
         changedItems[item.id] = true
@@ -235,8 +263,8 @@ export default function TeamDashboard() {
     }
 
     // Update ref with current values
-    prevPipelineRef.current = businessPipeline
-  }, [businessPipeline])
+    prevPipelineRef.current = safeBusinessPipeline
+  }, [safeBusinessPipeline])
 
   const codeAscope = {
     message:
@@ -385,7 +413,7 @@ export default function TeamDashboard() {
     setNominateDialogOpen(false)
   }
 
-  if (!user || !user.fields) {
+  if (!user) {
     return <div>Loading...</div>
   }
 
@@ -401,10 +429,8 @@ export default function TeamDashboard() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-black dark:text-white">Strategy Team Dashboard</h1>
-              <p className="text-gray-600 dark:text-gray-400 text-sm sm:text-base">
-                Your daily dose of team vibes and productivity
-              </p>
+              <h1 className="text-2xl sm:text-3xl font-bold text-white">Strategy Team Dashboard</h1>
+              <p className="text-gray-400 text-sm sm:text-base">Your daily dose of team vibes and productivity</p>
             </div>
             <div className="flex items-center gap-2">
               <Button
@@ -425,7 +451,7 @@ export default function TeamDashboard() {
       <div className="bg-gradient-to-r from-purple-600 via-pink-500 to-orange-500 text-white py-2 overflow-hidden">
         <div className="marquee" ref={marqueeRef}>
           <div className="marquee-content" style={{ animation: "marquee 40s linear infinite" }}>
-            {snaps.map((snap, index) => (
+            {latestSnaps.map((snap, index) => (
               <span key={index} className="mx-8">
                 <span className="font-bold">{snap.author}:</span> {snap.quote}
               </span>
@@ -810,7 +836,7 @@ export default function TeamDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {isLoadingPipeline && businessPipeline.length === 0 ? (
+                  {isLoadingPipeline && safeBusinessPipeline.length === 0 ? (
                     // Loading state
                     <>
                       <div className="bg-slate-800 rounded-xl p-4 border-l-4 border-blue-700 animate-pulse">
@@ -838,7 +864,7 @@ export default function TeamDashboard() {
                     </>
                   ) : (
                     // Actual content
-                    businessPipeline.map((item, index) => (
+                    safeBusinessPipeline.map((item, index) => (
                       <div
                         key={index}
                         className={cn(
@@ -872,14 +898,16 @@ export default function TeamDashboard() {
                           </div>
                           <p className="text-sm text-gray-400">Due: {item.dueDate}</p>
                           <div className="flex items-center gap-2">
-                            <span className="text-xs text-gray-500 dark:text-gray-500">Team:</span>
-                            <div className="flex gap-1">
-                              {item.owner.map((member, idx) => (
-                                <Badge key={idx} variant="outline" className="text-xs dark:border-gray-700">
-                                  {member}
-                                </Badge>
-                              ))}
-                            </div>
+                            <span className="text-xs text-gray-500">Team:</span>
+                            {item.owner.map((member, idx) => (
+                              <Badge
+                                key={idx}
+                                variant="outline"
+                                className="text-xs border-gray-600 text-gray-300 bg-slate-700/50"
+                              >
+                                {member}
+                              </Badge>
+                            ))}
                           </div>
                         </div>
                       </div>
@@ -918,32 +946,6 @@ export default function TeamDashboard() {
                       <div className="flex items-center gap-2">
                         <Users className="h-4 w-4 text-gray-500" />
                         <span className="text-xs text-gray-400">{work.team.join(", ")}</span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Team Moments */}
-          <Card className="bg-white dark:bg-slate-900 shadow-md rounded-2xl border-0 relative overflow-hidden">
-                      <work.icon className="h-12 w-12 text-gray-400 dark:text-gray-500" />
-                      <div className="absolute top-2 right-2">
-                        <Badge className={work.typeColor}>{work.type}</Badge>
-                      </div>
-                    </div>
-                    <div className="p-4">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs text-gray-500 dark:text-gray-400">{work.date}</span>
-                      </div>
-                      <h3 className="font-bold text-gray-900 dark:text-gray-100 mb-2">{work.title}</h3>
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 leading-relaxed">
-                        {work.description}
-                      </p>
-                      <div className="flex items-center gap-2">
-                        <Users className="h-4 w-4 text-gray-400 dark:text-gray-500" />
-                        <span className="text-xs text-gray-600 dark:text-gray-400">{work.team.join(", ")}</span>
                       </div>
                     </div>
                   </div>
@@ -1120,6 +1122,9 @@ export default function TeamDashboard() {
 
           {/* Team Resources */}
           <TeamResources />
+
+          {/* Team Avatar Gallery */}
+          <TeamAvatarGallery />
         </section>
       </div>
 
