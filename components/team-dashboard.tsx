@@ -49,7 +49,7 @@ import { useAirtableUser } from "@/use-airtable-user"
 import { toast } from "sonner"
 import { TeamResources } from "@/components/team-resources"
 import { TeamAvatarGallery } from "@/components/team-avatar-gallery"
-import { fetchUserSnaps, Snap } from '@/lib/airtable';
+import { fetchUserSnaps } from "@/lib/airtable";
 
 // Types for our data
 

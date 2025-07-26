@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { AirtableUserProvider, useAirtableUser } from "@/use-airtable-user"
 import TeamDashboard from "@/components/team-dashboard"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { fetchUserSnaps } from "@/lib/airtable"
 
 function LoginForm() {
   const { login, isLoading, error } = useAirtableUser()
