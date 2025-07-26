@@ -3,20 +3,11 @@ import { NextResponse } from 'next/server'
 const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID
 const AIRTABLE_ACCESS_TOKEN = process.env.AIRTABLE_ACCESS_TOKEN
 
-export async function GET(request: Request) {
+export async function GET() {
   try {
-    const { searchParams } = new URL(request.url)
-    const mentionedUser = searchParams.get('mentioned')
-    
-    // Build the filter formula if we want snaps about a specific user
-    let filterFormula = ''
-    if (mentionedUser) {
-      filterFormula = `&filterByFormula={Mentioned}="${mentionedUser}"`
-    }
-    
-    // Fetch snaps sorted by date (most recent first)
+    // Get visible recordings sorted by date (most recent first)
     const response = await fetch(
-      `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/Snaps?sort[0][field]=Date&sort[0][direction]=desc&maxRecords=10${filterFormula}`,
+      `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/Meeting Recordings?filterByFormula={Visibility}=TRUE()&sort[0][field]=Date&sort[0][direction]=desc&maxRecords=5`,
       {
         headers: {
           'Authorization': `Bearer ${AIRTABLE_ACCESS_TOKEN}`,
@@ -31,41 +22,28 @@ export async function GET(request: Request) {
 
     const data = await response.json()
     
-    // Transform the data to match what your app expects
     const transformedRecords = data.records.map((record: any) => ({
       id: record.id,
-      quote: record.fields['Snap content'] || '',
-      author: record.fields['Submitted by'] || 'Anonymous',
-      mentioned: record.fields.Mentioned || '',
-      timestamp: formatTimestamp(record.fields.Date),
-      category: 'Feedback', // You can adjust this or add a Category field
-      attachment: record.fields.Attachment?.[0]?.url || null,
+      title: record.fields.Title || 'Untitled Meeting',
+      date: record.fields.Date || '',
+      type: record.fields.Type || 'Meeting',
+      recordingLink: record.fields['Recording Link'] || '',
+      password: record.fields.Password || '',
+      summary: record.fields.Summary || '',
+      duration: calculateDuration(record.fields.Date), // You might want to add a duration field
     }))
 
     return NextResponse.json(transformedRecords)
   } catch (error) {
-    console.error('Error fetching snaps data:', error)
+    console.error('Error fetching recordings data:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch snaps data' },
+      { error: 'Failed to fetch recordings data' },
       { status: 500 }
     )
   }
 }
 
-function formatTimestamp(dateString: string): string {
-  if (!dateString) return 'Unknown time'
-  
-  const date = new Date(dateString)
-  const now = new Date()
-  const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60))
-  
-  if (diffInMinutes < 60) {
-    return `${diffInMinutes} minutes ago`
-  } else if (diffInMinutes < 1440) {
-    const hours = Math.floor(diffInMinutes / 60)
-    return `${hours} hour${hours !== 1 ? 's' : ''} ago`
-  } else {
-    const days = Math.floor(diffInMinutes / 1440)
-    return `${days} day${days !== 1 ? 's' : ''} ago`
-  }
+function calculateDuration(dateString: string): string {
+  // This is a placeholder - you might want to add an actual duration field
+  return '45 min'
 }
