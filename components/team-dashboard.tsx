@@ -1,3 +1,5 @@
+/* PART 1 */
+
 "use client"
 
 import React from "react"
@@ -91,6 +93,8 @@ interface TeamMember {
   }
 }
 
+/* END PART 1 */
+/* PART 2 */
 export default function TeamDashboard() {
   const { user, logout } = useAirtableUser()
   const [snapDialogOpen, setSnapDialogOpen] = useState(false)
@@ -164,8 +168,9 @@ export default function TeamDashboard() {
 
     return Array.isArray(data) ? data : []
   }
-
-  // Initial mock data for snaps (fallback)
+/* END PART 2 */
+/* PART 3 */
+// Initial mock data for snaps (fallback)
   const initialSnaps: Snap[] = [
     {
       id: 1,
@@ -197,12 +202,20 @@ export default function TeamDashboard() {
 
   // Use our custom hook for live data
   const {
-    data: snaps,
+    data: allSnaps,
+    isLoading: isLoadingAllSnaps,
+    lastUpdated: allSnapsLastUpdated,
+    hasNewData: hasNewAllSnaps,
+    refresh: refreshAllSnaps,
+  } = useLiveData<Snap[]>(fetchSnaps, initialSnaps, { interval: 15000 }) // All snaps for marquee
+
+  const {
+    data: userSnaps,
     isLoading: isLoadingSnaps,
     lastUpdated: snapsLastUpdated,
     hasNewData: hasNewSnaps,
     refresh: refreshSnaps,
-  } = useLiveData<Snap[]>(fetchSnaps, initialSnaps, { interval: 15000 })
+  } = useLiveData<Snap[]>(fetchUserSnaps, initialSnaps, { interval: 15000 }) // User-specific snaps
 
   const {
     data: businessPipeline,
@@ -215,8 +228,11 @@ export default function TeamDashboard() {
   // Ensure businessPipeline is always an array
   const safeBusinessPipeline = Array.isArray(businessPipeline) ? businessPipeline : initialPipeline
 
-  // Get the latest 2 snaps for display
-  const latestSnaps = Array.isArray(snaps) ? snaps.slice(0, 2) : initialSnaps.slice(0, 2)
+  // Get the latest 20 snaps for marquee
+  const marqueeSnaps = Array.isArray(allSnaps) ? allSnaps.slice(0, 20) : initialSnaps.slice(0, 2)
+
+  // Get the latest 2 user-specific snaps for display in the card
+  const latestSnaps = Array.isArray(userSnaps) ? userSnaps.slice(0, 2) : initialSnaps.slice(0, 2)
 
   // Animation for progress bars when they update
   const [animatingItems, setAnimatingItems] = useState<Record<string | number, boolean>>({})
@@ -242,8 +258,9 @@ export default function TeamDashboard() {
 
     prevPipelineRef.current = safeBusinessPipeline
   }, [safeBusinessPipeline])
-
-  const spotifyPlaylist = {
+/* END PART 3 */
+/* PART 4 */
+const spotifyPlaylist = {
     title: "Focus Flow - Week 3",
     curator: "Alex Rodriguez",
     link: "https://open.spotify.com/playlist/...",
@@ -374,8 +391,9 @@ export default function TeamDashboard() {
   if (!user) {
     return <div>Loading...</div>
   }
-
-  return (
+/* END PART 4 */
+/* PART 5 */
+return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
       {/* Subtle background pattern */}
       <div className="fixed inset-0 opacity-[0.03] pointer-events-none">
@@ -407,22 +425,24 @@ export default function TeamDashboard() {
         </div>
       </header>
 
-      {/* Scrolling Marquee with Recent Snaps */}
+      {/* Scrolling Marquee with Latest 20 Snaps */}
       <div className="bg-gradient-to-r from-purple-600 via-pink-500 to-orange-500 text-white py-2 overflow-hidden">
         <div className="marquee" ref={marqueeRef}>
-          <div className="marquee-content" style={{ animation: "marquee 40s linear infinite" }}>
-            {latestSnaps.map((snap, index) => (
+          <div className="marquee-content" style={{ animation: "marquee 60s linear infinite" }}>
+            {marqueeSnaps.map((snap, index) => (
               <span key={index} className="mx-8">
                 <span className="font-bold">{snap.author}:</span> {snap.quote}
+                {snap.mentioned && <span className="text-yellow-200"> → {snap.mentioned}</span>}
               </span>
             ))}
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
-
-        {/* SECTION 1: FOR YOU */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8"> 
+  {/* END PART 5 */}
+  {/* PART 6 */}
+  {/* SECTION 1: FOR YOU */}
         <section className="space-y-4">
           <div className="flex items-center gap-3">
             <Sparkles className="h-5 w-5 text-purple-400" />
@@ -565,7 +585,9 @@ export default function TeamDashboard() {
           </div>
         </section>
 
-        {/* SECTION 2: VIBES */}
+        {/* END PART 6 */}
+  {/* PART 7 */}
+{/* SECTION 2: VIBES */}
         <section className="space-y-4">
           <div className="flex items-center gap-3">
             <Heart className="h-5 w-5 text-pink-400" />
@@ -729,8 +751,9 @@ export default function TeamDashboard() {
             )}
           </div>
         </section>
-
-        {/* SECTION 3: WHAT'S KEEPING US BUSY */}
+  {/* END PART 7 */}
+  {/* PART 8 */}
+{/* SECTION 3: WHAT'S KEEPING US BUSY */}
         <section className="space-y-4">
           <div className="flex items-center gap-3">
             <Coffee className="h-5 w-5 text-orange-400" />
@@ -873,7 +896,9 @@ export default function TeamDashboard() {
             </Card>
           </div>
 
-          {/* Latest Work Showcase */}
+          {/* END PART 8 */}
+  {/* PART 9 */}
+{/* Latest Work Showcase */}
           <Card className="bg-slate-900 shadow-md rounded-2xl border-0 relative overflow-hidden">
             <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-bl from-purple-500/10 rounded-full -translate-y-20 translate-x-20"></div>
             <CardHeader className="relative">
@@ -1142,3 +1167,5 @@ export default function TeamDashboard() {
     </div>
   )
 }
+  {/* END PART 9 */}
+  
