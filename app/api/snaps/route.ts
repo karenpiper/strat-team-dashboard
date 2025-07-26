@@ -35,50 +35,7 @@ const mockSnapsData = [
 ]
 
 // Helper: get random items from an array
-function getRandomItems<T>(array: T[], count: number): T[] {
-  const shuffled = [...array].sort(() => 0.5 - Math.random())
-  return shuffled.slice(0, count)
-}
-
-// API route handler
 export async function GET() {
-  try {
-    const airtableApiKey = process.env.AIRTABLE_API_KEY
-    const airtableBaseId = process.env.AIRTABLE_BASE_ID
-
-    if (!airtableApiKey || !airtableBaseId) {
-      const fallbackSnaps = getRandomItems(mockSnapsData, Math.floor(Math.random() * 2) + 2)
-      return NextResponse.json(fallbackSnaps)
-    }
-
-    const response = await fetch(`https://api.airtable.com/v0/${airtableBaseId}/Snaps`, {
-      headers: {
-        Authorization: `Bearer ${airtableApiKey}`,
-        "Content-Type": "application/json",
-      },
-    })
-
-    if (!response.ok) {
-      throw new Error(`Airtable API error: ${response.status}`)
-    }
-
-    const data = await response.json()
-
-    const transformedRecords = (data.records || []).map((record: any) => ({
-      id: record.id,
-      fields: {
-        Quote: record.fields["Snap content"],
-        Author: record.fields["Submitted by"]?.name || "Unknown",
-        Target: record.fields["Mentioned"]?.name || "Unknown",
-        Date: record.fields["Date"],
-        Image: record.fields["Attachment"]?.[0]?.url || null,
-      },
-    }))
-
-    return NextResponse.json(transformedRecords)
-  } catch (error) {
-    console.error("Snaps API Error:", error)
-    const fallbackSnaps = getRandomItems(mockSnapsData, Math.floor(Math.random() * 2) + 2)
-    return NextResponse.json(fallbackSnaps)
-  }
+  const fallbackSnaps = getRandomItems(mockSnapsData, Math.floor(Math.random() * 2) + 2)
+  return NextResponse.json(fallbackSnaps)
 }
