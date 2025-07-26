@@ -43,14 +43,9 @@ export async function GET() {
 
     return NextResponse.json(transformedRecords)
   } catch (error) {
-  console.error('Detailed error:', error)
+  console.error('Error fetching team data:', error)
   return NextResponse.json(
-    { 
-      error: 'Failed to fetch team data',
-      details: error.message,
-      baseId: AIRTABLE_BASE_ID ? 'Set' : 'Missing',
-      token: AIRTABLE_ACCESS_TOKEN ? 'Set' : 'Missing'
-    },
+    { error: 'Failed to fetch team data' },
     { status: 500 }
   )
 }
