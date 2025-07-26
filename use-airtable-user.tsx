@@ -18,7 +18,7 @@ interface User {
 interface AirtableUserContextType {
   user: User | null
   login: (email: string, password: string) => Promise<void>
-  logout: () => void
+  logout: () => void // Added logout function
   isLoading: boolean
   error: string | null
 }
@@ -98,20 +98,15 @@ export function AirtableUserProvider({ children }: { children: React.ReactNode }
     }
   }, [])
 
+  // Add logout function
   const logout = useCallback(() => {
     setUser(null)
-    localStorage.removeItem("airtable-user")
-    toast.success("You have been logged out")
+    localStorage.removeItem("airtableUser")
+    toast.info("You have been logged out.")
   }, [])
 
-  const value = useMemo(
-    () => ({
-      user,
-      login,
-      logout,
-      isLoading,
-      error,
-    }),
+  const value = React.useMemo(
+    () => ({ user, setUser, login, logout, isLoading, error }),
     [user, login, logout, isLoading, error],
   )
 
