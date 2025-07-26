@@ -1,5 +1,6 @@
 "use client"
 
+import React from "react"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Progress } from "@/components/ui/progress"
 import { useState, useRef, useEffect } from "react"
@@ -52,28 +53,41 @@ interface Snap {
   id: string | number
   quote: string
   author: string
+  mentioned: string
   timestamp: string
   category: string
+  attachment?: string
 }
 
 interface PipelineItem {
   id: string | number
   name: string
+  type: string
+  description: string
   dueDate: string
+  lead: string
   owner: string[]
   status: string
   statusColor: string
   progress: number
+  notes: string
+  url: string
 }
 
-// Add after the existing imports and before the component definition
 interface TeamMember {
   id: string
   fields: {
     Name: string
     Role: string
+    Discipline: string
+    Email: string
+    Manager: string[]
     "Photo URL": string
-    [key: string]: any
+    Birthday: string
+    Featured: boolean
+    "Code-a-scope": string
+    "Snaps Count": number
+    "Featured Count": number
   }
 }
 
@@ -83,16 +97,10 @@ export default function TeamDashboard() {
   const [nominateDialogOpen, setNominateDialogOpen] = useState(false)
   const marqueeRef = useRef<HTMLDivElement>(null)
 
-  // Add this inside the component, after the existing state declarations
+  // State for real data
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([])
-  const [moments, setMoments] = useState([])
-  const [mustReads, setMustReads] = useState([])
-  const [recordings, setRecordings] = useState([])
-  const [bestOfWork, setBestOfWork] = useState([])
-  const [snapsData, setSnapsData] = useState([])
-  const [pipelineData, setPipelineData] = useState([])
 
-  // Add this useEffect to fetch team members
+  // Fetch team members
   useEffect(() => {
     const fetchTeamMembers = async () => {
       try {
@@ -108,30 +116,43 @@ export default function TeamDashboard() {
     fetchTeamMembers()
   }, [])
 
-  // Update the beastBabe object to use actual team member data
-  const currentBeastBabe = teamMembers.find((member) => member.fields.Name === "Jane Smith") || {
-    fields: {
-      Name: "Jane Smith",
-      Role: "Senior Analyst",
-      "Photo URL": "/placeholder.svg?height=200&width=200&text=Jane+Smith&bg=ec4899&color=fff",
-    },
-  }
+  // Find current user in team data
+  const currentUser = teamMembers.find(
+    (member) => member.fields.Email === user?.email || member.fields.Name === user?.name
+  ) || teamMembers.find((member) => member.fields.Name === "Karen Piper") // Fallback to Karen
 
-  const beastBabe = {
+  // Select Beast Babe of the Week - prioritize Featured members, then random
+  const featuredMembers = teamMembers.filter((member) => member.fields.Featured)
+  const currentBeastBabe = featuredMembers.length > 0 
+    ? featuredMembers[0] 
+    : teamMembers.find((member) => member.fields["Photo URL"]) // Pick someone with a photo
+    || teamMembers[0] // Final fallback
+
+  const beastBabe = currentBeastBabe ? {
     name: currentBeastBabe.fields.Name,
     role: currentBeastBabe.fields.Role,
+    discipline: currentBeastBabe.fields.Discipline,
     photoUrl: currentBeastBabe.fields["Photo URL"],
-    achievement: "Led the competitive analysis that identified our Q1 positioning strategy",
-    tag: "Data Wizard",
+    achievement: "Outstanding performance and dedication to excellence this week",
+    tag: "Team MVP",
+  } : null
+
+  // Get Code-a-scope for current user
+  const codeAscope = {
+    message: currentUser?.fields["Code-a-scope"] || 
+      "Today's energy is perfect for tackling complex problems. Your analytical skills are particularly sharp - use them to break down that challenging project into manageable pieces. A collaborative approach will yield unexpected insights.",
+    color: "bg-purple-50 border-purple-200",
   }
 
-  // Fetch snaps with live updates
+  // Fetch snaps with live updates - filter by current user
   const fetchSnaps = async () => {
-    const response = await fetch("/api/snaps")
+    const userName = currentUser?.fields.Name || user?.name
+    const url = userName ? `/api/snaps?mentioned=${encodeURIComponent(userName)}` : '/api/snaps'
+    
+    const response = await fetch(url)
     if (!response.ok) throw new Error("Failed to fetch snaps")
     const data = await response.json()
 
-    // Ensure we return an array
     return Array.isArray(data) ? data : []
   }
 
@@ -141,78 +162,36 @@ export default function TeamDashboard() {
     if (!response.ok) throw new Error("Failed to fetch pipeline data")
     const data = await response.json()
 
-    // Ensure we return an array
     return Array.isArray(data) ? data : []
   }
 
-  // Initial mock data for snaps
+  // Initial mock data for snaps (fallback)
   const initialSnaps: Snap[] = [
     {
       id: 1,
-      quote:
-        "Karen's presentation to the client was absolutely stellar! The way she handled their tough questions was impressive.",
-      author: "Mike Chen",
+      quote: "Great work on the client presentation! Your insights were spot on.",
+      author: "Team Member",
+      mentioned: currentUser?.fields.Name || "You",
       timestamp: "2 hours ago",
       category: "Leadership",
     },
-    {
-      id: 2,
-      quote: "Thanks to John's strategic insights, we identified a new market opportunity worth $2M.",
-      author: "Sarah Wilson",
-      timestamp: "5 hours ago",
-      category: "Strategy",
-    },
-    {
-      id: 3,
-      quote: "Jane's data analysis saved us from a potentially costly mistake. Her attention to detail is unmatched!",
-      author: "Alex Rodriguez",
-      timestamp: "1 day ago",
-      category: "Analysis",
-    },
-    {
-      id: 4,
-      quote: "Huge shoutout to Mike for staying late to help debug the dashboard before the client demo!",
-      author: "Karen Johnson",
-      timestamp: "2 days ago",
-      category: "Teamwork",
-    },
-    {
-      id: 5,
-      quote: "Sarah's creative approach to the branding challenge completely transformed our pitch.",
-      author: "John Doe",
-      timestamp: "3 days ago",
-      category: "Creativity",
-    },
   ]
 
-  // Initial mock data for pipeline
+  // Initial mock data for pipeline (fallback)
   const initialPipeline: PipelineItem[] = [
     {
       id: 1,
-      name: "TechCorp Rebranding",
+      name: "Strategy Project",
+      type: "Strategy",
+      description: "Sample project description",
       dueDate: "Mar 25",
-      owner: ["Karen J.", "Mike C."],
+      lead: "Team Lead",
+      owner: ["Team Member"],
       status: "In Progress",
       statusColor: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
       progress: 65,
-    },
-    {
-      id: 2,
-      name: "FinanceApp Strategy",
-      dueDate: "Mar 30",
-      owner: ["John D."],
-      status: "Review",
-      statusColor: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
-      progress: 85,
-    },
-    {
-      id: 3,
-      name: "Healthcare Market Analysis",
-      dueDate: "Apr 5",
-      owner: ["Jane S.", "Alex R."],
-      status: "Final Draft",
-      statusColor: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
-      progress: 95,
+      notes: "",
+      url: "",
     },
   ]
 
@@ -223,7 +202,7 @@ export default function TeamDashboard() {
     lastUpdated: snapsLastUpdated,
     hasNewData: hasNewSnaps,
     refresh: refreshSnaps,
-  } = useLiveData<Snap[]>(fetchSnaps, initialSnaps, { interval: 15000 }) // 15 seconds
+  } = useLiveData<Snap[]>(fetchSnaps, initialSnaps, { interval: 15000 })
 
   const {
     data: businessPipeline,
@@ -231,7 +210,7 @@ export default function TeamDashboard() {
     lastUpdated: pipelineLastUpdated,
     hasNewData: hasNewPipeline,
     refresh: refreshPipeline,
-  } = useLiveData<PipelineItem[]>(fetchPipeline, initialPipeline, { interval: 20000 }) // 20 seconds
+  } = useLiveData<PipelineItem[]>(fetchPipeline, initialPipeline, { interval: 20000 })
 
   // Ensure businessPipeline is always an array
   const safeBusinessPipeline = Array.isArray(businessPipeline) ? businessPipeline : initialPipeline
@@ -258,19 +237,11 @@ export default function TeamDashboard() {
 
     if (Object.keys(changedItems).length > 0) {
       setAnimatingItems(changedItems)
-      // Clear animation flags after animation completes
       setTimeout(() => setAnimatingItems({}), 2000)
     }
 
-    // Update ref with current values
     prevPipelineRef.current = safeBusinessPipeline
   }, [safeBusinessPipeline])
-
-  const codeAscope = {
-    message:
-      "Today's energy is perfect for tackling complex problems. Your analytical skills are particularly sharp - use them to break down that challenging project into manageable pieces. A collaborative approach will yield unexpected insights.",
-    color: "bg-purple-50 border-purple-200",
-  }
 
   const spotifyPlaylist = {
     title: "Focus Flow - Week 3",
@@ -304,7 +275,6 @@ export default function TeamDashboard() {
       description: "Comprehensive analysis of user journey and conversion optimization opportunities",
       team: ["Jane S.", "Mike C."],
       icon: BarChart3,
-      thumbnail: "/placeholder.svg?height=120&width=200&text=UX+Research",
     },
     {
       id: 2,
@@ -315,7 +285,6 @@ export default function TeamDashboard() {
       description: "New framework for positioning tech startups in competitive markets",
       team: ["John D.", "Karen J."],
       icon: Target,
-      thumbnail: "/placeholder.svg?height=120&width=200&text=Strategy+Framework",
     },
     {
       id: 3,
@@ -326,7 +295,6 @@ export default function TeamDashboard() {
       description: "Deep dive into European market opportunities for SaaS expansion",
       team: ["Alex R.", "Sarah M."],
       icon: TrendingUp,
-      thumbnail: "/placeholder.svg?height=120&width=200&text=Market+Analysis",
     },
   ]
 
@@ -348,7 +316,7 @@ export default function TeamDashboard() {
       id: 1,
       title: "Strategy Sprint Planning",
       type: "Meeting",
-      date: new Date(2024, 2, 20), // March 20, 2024
+      date: new Date(2024, 2, 20),
       time: "10:00 AM",
       attendees: ["Karen J.", "John D.", "Jane S."],
       color: "bg-blue-500",
@@ -357,7 +325,7 @@ export default function TeamDashboard() {
       id: 2,
       title: "Client Presentation Deadline",
       type: "Due Date",
-      date: new Date(2024, 2, 22), // March 22, 2024
+      date: new Date(2024, 2, 22),
       time: "5:00 PM",
       attendees: ["Mike C.", "Sarah M."],
       color: "bg-orange-500",
@@ -366,8 +334,8 @@ export default function TeamDashboard() {
       id: 3,
       title: "Alex - Vacation",
       type: "PTO",
-      date: new Date(2024, 2, 25), // March 25, 2024
-      endDate: new Date(2024, 2, 29), // March 29, 2024
+      date: new Date(2024, 2, 25),
+      endDate: new Date(2024, 2, 29),
       time: "All Day",
       attendees: ["Alex R."],
       color: "bg-purple-500",
@@ -376,7 +344,7 @@ export default function TeamDashboard() {
       id: 4,
       title: "Good Friday",
       type: "Holiday",
-      date: new Date(2024, 2, 29), // March 29, 2024
+      date: new Date(2024, 2, 29),
       time: "All Day",
       attendees: [],
       color: "bg-red-500",
@@ -385,26 +353,16 @@ export default function TeamDashboard() {
       id: 5,
       title: "Team Happy Hour",
       type: "Office Event",
-      date: new Date(2024, 3, 2), // April 2, 2024
+      date: new Date(2024, 3, 2),
       time: "5:30 PM",
       attendees: ["All Team"],
       color: "bg-green-500",
     },
   ]
 
-  const quickLinks = [
-    { name: "Figma", icon: Figma, link: "#" },
-    { name: "Brand Guidelines", icon: FileText, link: "#" },
-    { name: "Client Portal", icon: Users, link: "#" },
-    { name: "Analytics", icon: BarChart3, link: "#" },
-    { name: "Time Tracking", icon: Clock, link: "#" },
-    { name: "Settings", icon: Settings, link: "#" },
-  ]
-
   const handleAddSnap = (snapData: any) => {
     toast.success("Snap added successfully! 🎉")
     setSnapDialogOpen(false)
-    // Refresh snaps after adding a new one
     setTimeout(refreshSnaps, 500)
   }
 
@@ -430,7 +388,9 @@ export default function TeamDashboard() {
           <div className="flex justify-between items-center">
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold text-white">Strategy Team Dashboard</h1>
-              <p className="text-gray-400 text-sm sm:text-base">Your daily dose of team vibes and productivity</p>
+              <p className="text-gray-400 text-sm sm:text-base">
+                Welcome back, {currentUser?.fields.Name || user?.name || 'Team Member'}!
+              </p>
             </div>
             <div className="flex items-center gap-2">
               <Button
@@ -461,6 +421,7 @@ export default function TeamDashboard() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
+
         {/* SECTION 1: FOR YOU */}
         <section className="space-y-4">
           <div className="flex items-center gap-3">
@@ -532,7 +493,7 @@ export default function TeamDashboard() {
                               </SelectTrigger>
                               <SelectContent>
                                 {teamMembers.map((member) => (
-                                  <SelectItem key={member.id} value={member.id}>
+                                  <SelectItem key={member.id} value={member.fields.Name}>
                                     {member.fields.Name}
                                   </SelectItem>
                                 ))}
@@ -570,7 +531,6 @@ export default function TeamDashboard() {
               <CardContent>
                 <div className="space-y-4">
                   {isLoadingSnaps && latestSnaps.length === 0 ? (
-                    // Loading state
                     <>
                       <div className="bg-slate-800 rounded-xl p-3 border-l-4 border-blue-700 animate-pulse">
                         <div className="h-4 bg-slate-700 rounded w-3/4 mb-2"></div>
@@ -581,18 +541,8 @@ export default function TeamDashboard() {
                           <div className="h-3 bg-slate-700 rounded w-16"></div>
                         </div>
                       </div>
-                      <div className="bg-slate-800 rounded-xl p-3 border-l-4 border-blue-700 animate-pulse">
-                        <div className="h-4 bg-slate-700 rounded w-full mb-2"></div>
-                        <div className="h-4 bg-slate-700 rounded w-2/3 mb-2"></div>
-                        <div className="h-4 bg-slate-700 rounded w-3/4"></div>
-                        <div className="flex justify-between items-center mt-2">
-                          <div className="h-3 bg-slate-700 rounded w-20"></div>
-                          <div className="h-3 bg-slate-700 rounded w-16"></div>
-                        </div>
-                      </div>
                     </>
                   ) : (
-                    // Actual content
                     latestSnaps.map((snap, index) => (
                       <div
                         key={index}
@@ -686,92 +636,97 @@ export default function TeamDashboard() {
             </Card>
 
             {/* Beast Babe */}
-            <Card className="bg-gradient-to-br from-pink-950/50 to-rose-950/50 shadow-md rounded-2xl border-0 relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-28 h-28 bg-gradient-to-bl from-pink-500/10 rounded-full -translate-y-14 translate-x-14"></div>
-              <CardHeader className="relative">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center gap-2 text-pink-300">
-                    <Award className="h-5 w-5" />
-                    Beast Babe of the Week
-                  </CardTitle>
-                  <Dialog open={nominateDialogOpen} onOpenChange={setNominateDialogOpen}>
-                    <DialogTrigger asChild>
-                      <Button size="sm" className="bg-pink-700 hover:bg-pink-600">
-                        <Star className="h-4 w-4 mr-1" />
-                        Nominate
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="bg-slate-900">
-                      <DialogHeader>
-                        <DialogTitle>Nominate Beast Babe of the Week</DialogTitle>
-                      </DialogHeader>
-                      <div className="space-y-4">
-                        <div>
-                          <Label htmlFor="nominee">Nominate</Label>
-                          <Select>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select team member" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {teamMembers.map((member) => (
-                                <SelectItem key={member.id} value={member.id}>
-                                  {member.fields.Name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+            {beastBabe && (
+              <Card className="bg-gradient-to-br from-pink-950/50 to-rose-950/50 shadow-md rounded-2xl border-0 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-28 h-28 bg-gradient-to-bl from-pink-500/10 rounded-full -translate-y-14 translate-x-14"></div>
+                <CardHeader className="relative">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="flex items-center gap-2 text-pink-300">
+                      <Award className="h-5 w-5" />
+                      Beast Babe of the Week
+                    </CardTitle>
+                    <Dialog open={nominateDialogOpen} onOpenChange={setNominateDialogOpen}>
+                      <DialogTrigger asChild>
+                        <Button size="sm" className="bg-pink-700 hover:bg-pink-600">
+                          <Star className="h-4 w-4 mr-1" />
+                          Nominate
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="bg-slate-900">
+                        <DialogHeader>
+                          <DialogTitle>Nominate Beast Babe of the Week</DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-4">
+                          <div>
+                            <Label htmlFor="nominee">Nominate</Label>
+                            <Select>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select team member" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {teamMembers.map((member) => (
+                                  <SelectItem key={member.id} value={member.fields.Name}>
+                                    {member.fields.Name}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div>
+                            <Label htmlFor="reason">Why they deserve it</Label>
+                            <Textarea
+                              id="reason"
+                              placeholder="Tell us what makes them a beast babe this week..."
+                              className="min-h-[100px]"
+                            />
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Checkbox id="anonymous-nomination" />
+                            <Label htmlFor="anonymous-nomination" className="text-sm">
+                              Submit anonymously
+                            </Label>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button className="flex-1" onClick={handleNominate}>
+                              Submit Nomination
+                            </Button>
+                            <Button variant="outline" onClick={() => setNominateDialogOpen(false)}>
+                              Cancel
+                            </Button>
+                          </div>
                         </div>
-                        <div>
-                          <Label htmlFor="reason">Why they deserve it</Label>
-                          <Textarea
-                            id="reason"
-                            placeholder="Tell us what makes them a beast babe this week..."
-                            className="min-h-[100px]"
-                          />
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <Checkbox id="anonymous-nomination" />
-                          <Label htmlFor="anonymous-nomination" className="text-sm">
-                            Submit anonymously
-                          </Label>
-                        </div>
-                        <div className="flex gap-2">
-                          <Button className="flex-1" onClick={handleNominate}>
-                            Submit Nomination
-                          </Button>
-                          <Button variant="outline" onClick={() => setNominateDialogOpen(false)}>
-                            Cancel
-                          </Button>
-                        </div>
+                      </DialogContent>
+                    </Dialog>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-start gap-4">
+                    <Avatar className="h-16 w-16 ring-4 ring-pink-800">
+                      <AvatarImage src={beastBabe.photoUrl || "/placeholder.svg"} alt={beastBabe.name} />
+                      <AvatarFallback className="bg-pink-800 text-pink-200 font-bold">
+                        {beastBabe.name
+                          .split(" ")
+                          .map((n) => n[0])
+                          .join("")}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                      <h3 className="font-bold text-pink-200 text-lg">{beastBabe.name}</h3>
+                      <p className="text-sm text-pink-300 mb-1">{beastBabe.role}</p>
+                      {beastBabe.discipline && (
+                        <p className="text-xs text-pink-400 mb-3">{beastBabe.discipline}</p>
+                      )}
+                      <p className="text-sm text-pink-300 leading-relaxed">"{beastBabe.achievement}"</p>
+                      <div className="flex items-center gap-1 mt-3">
+                        {[...Array(5)].map((_, i) => (
+                          <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                        ))}
                       </div>
-                    </DialogContent>
-                  </Dialog>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-start gap-4">
-                  <Avatar className="h-16 w-16 ring-4 ring-pink-800">
-                    <AvatarImage src={beastBabe.photoUrl || "/placeholder.svg"} alt={beastBabe.name} />
-                    <AvatarFallback className="bg-pink-800 text-pink-200 font-bold">
-                      {beastBabe.name
-                        .split(" ")
-                        .map((n) => n[0])
-                        .join("")}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1">
-                    <h3 className="font-bold text-pink-200 text-lg">{beastBabe.name}</h3>
-                    <p className="text-sm text-pink-300 mb-3">{beastBabe.role}</p>
-                    <p className="text-sm text-pink-300 leading-relaxed">"{beastBabe.achievement}"</p>
-                    <div className="flex items-center gap-1 mt-3">
-                      {[...Array(5)].map((_, i) => (
-                        <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                      ))}
                     </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            )}
           </div>
         </section>
 
@@ -837,19 +792,7 @@ export default function TeamDashboard() {
               <CardContent>
                 <div className="space-y-4">
                   {isLoadingPipeline && safeBusinessPipeline.length === 0 ? (
-                    // Loading state
                     <>
-                      <div className="bg-slate-800 rounded-xl p-4 border-l-4 border-blue-700 animate-pulse">
-                        <div className="flex items-start justify-between mb-3">
-                          <div className="h-5 bg-slate-700 rounded w-1/3"></div>
-                          <div className="h-5 bg-slate-700 rounded w-20"></div>
-                        </div>
-                        <div className="space-y-3">
-                          <div className="h-4 bg-slate-700 rounded w-full"></div>
-                          <div className="h-2 bg-slate-700 rounded w-full"></div>
-                          <div className="h-4 bg-slate-700 rounded w-1/4"></div>
-                        </div>
-                      </div>
                       <div className="bg-slate-800 rounded-xl p-4 border-l-4 border-blue-700 animate-pulse">
                         <div className="flex items-start justify-between mb-3">
                           <div className="h-5 bg-slate-700 rounded w-1/3"></div>
@@ -863,7 +806,6 @@ export default function TeamDashboard() {
                       </div>
                     </>
                   ) : (
-                    // Actual content
                     safeBusinessPipeline.map((item, index) => (
                       <div
                         key={index}
@@ -873,7 +815,15 @@ export default function TeamDashboard() {
                         )}
                       >
                         <div className="flex items-start justify-between mb-3">
-                          <h3 className="font-medium text-gray-100">{item.name}</h3>
+                          <div className="flex-1">
+                            <h3 className="font-medium text-gray-100">{item.name}</h3>
+                            {item.type && (
+                              <p className="text-xs text-gray-500 mb-1">{item.type}</p>
+                            )}
+                            {item.description && (
+                              <p className="text-sm text-gray-400 mb-2 line-clamp-2">{item.description}</p>
+                            )}
+                          </div>
                           <Badge variant="secondary" className={item.statusColor}>
                             {item.status}
                           </Badge>
@@ -896,7 +846,12 @@ export default function TeamDashboard() {
                               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer"></div>
                             )}
                           </div>
-                          <p className="text-sm text-gray-400">Due: {item.dueDate}</p>
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="text-gray-400">Due: {item.dueDate}</span>
+                            {item.lead && (
+                              <span className="text-gray-400">Lead: {item.lead}</span>
+                            )}
+                          </div>
                           <div className="flex items-center gap-2">
                             <span className="text-xs text-gray-500">Team:</span>
                             {item.owner.map((member, idx) => (
@@ -966,7 +921,6 @@ export default function TeamDashboard() {
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {teamMoments.slice(0, 8).map((moment, index) => {
-                  // Determine background color based on moment type
                   let bgColor = "bg-slate-800"
                   let textColor = "text-gray-200"
                   let borderColor = "border-gray-700"
@@ -1176,6 +1130,13 @@ export default function TeamDashboard() {
         
         .animate-shimmer {
           animation: shimmer 1.5s ease-in-out infinite;
+        }
+
+        .line-clamp-2 {
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
         }
       `}</style>
     </div>
