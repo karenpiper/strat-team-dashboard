@@ -1,49 +1,40 @@
-import { NextResponse } from 'next/server'
+import type { NextApiRequest, NextApiResponse } from 'next'
+import Airtable from 'airtable'
 
-const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID
-const AIRTABLE_ACCESS_TOKEN = process.env.AIRTABLE_ACCESS_TOKEN
+const base = new Airtable({ 
+  apiKey: process.env.AIRTABLE_API_KEY 
+}).base(process.env.AIRTABLE_BASE_ID!)
 
-export async function GET() {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    // Get visible recordings sorted by date (most recent first)
-    const response = await fetch(
-      `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/Meeting Recordings?filterByFormula={Visibility}=TRUE()&sort[0][field]=Date&sort[0][direction]=desc&maxRecords=5`,
-      {
-        headers: {
-          'Authorization': `Bearer ${AIRTABLE_ACCESS_TOKEN}`,
-          'Content-Type': 'application/json',
-        },
-      }
-    )
-
-    if (!response.ok) {
-      throw new Error(`Airtable API error: ${response.status}`)
-    }
-
-    const data = await response.json()
+    const records: any[] = []
     
-    const transformedRecords = data.records.map((record: any) => ({
+    await new Promise((resolve, reject) => {
+      base('snaps')
+        .select({ view: "Grid view" })
+        .eachPage(
+          function page(partialRecords, fetchNextPage) {
+            records.push(...partialRecords)
+            fetchNextPage()
+          },
+          function done(err) {
+            if (err) reject(err)
+            else resolve(records)
+          }
+        )
+    })
+
+    const snaps = records.map(record => ({
       id: record.id,
-      title: record.fields.Title || 'Untitled Meeting',
-      date: record.fields.Date || '',
-      type: record.fields.Type || 'Meeting',
-      recordingLink: record.fields['Recording Link'] || '',
-      password: record.fields.Password || '',
-      summary: record.fields.Summary || '',
-      duration: calculateDuration(record.fields.Date), // You might want to add a duration field
+      quote: record.fields["snap content"] || "",
+      author: record.fields["submitted by"] || "Anonymous",
+      mentioned: record.fields.mentioned || "",
+      timestamp: record.fields.date ? new Date(record.fields.date).toLocaleDateString() : "Recently",
+      category: "General"
     }))
 
-    return NextResponse.json(transformedRecords)
+    res.status(200).json(snaps)
   } catch (error) {
-    console.error('Error fetching recordings data:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch recordings data' },
-      { status: 500 }
-    )
+    res.status(500).json({ error: 'Failed to fetch snaps' })
   }
-}
-
-function calculateDuration(dateString: string): string {
-  // This is a placeholder - you might want to add an actual duration field
-  return '45 min'
 }

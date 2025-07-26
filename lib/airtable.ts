@@ -1,10 +1,27 @@
 import Airtable from "airtable"
 
-const base = new Airtable({ apiKey: process.env.NEXT_PUBLIC_AIRTABLE_API_KEY }).base(
-  process.env.NEXT_PUBLIC_AIRTABLE_BASE_ID!
-)
+// Check for environment variables and provide fallbacks
+const accessToken = process.env.AIRTABLE_ACCESS_TOKEN
+const baseId = process.env.AIRTABLE_BASE_ID
+
+// Only initialize Airtable if we have the required credentials
+let base: any = null
+
+if (accessToken && baseId) {
+  try {
+    base = new Airtable({ accessToken }).base(baseId)
+  } catch (error) {
+    console.error('Failed to initialize Airtable:', error)
+  }
+}
 
 export const getAirtableRecords = async (tableName: string) => {
+  // Return empty array if Airtable isn't initialized
+  if (!base) {
+    console.warn('Airtable not initialized - check environment variables')
+    return []
+  }
+
   const records: any[] = []
   return new Promise((resolve, reject) => {
     base(tableName)
@@ -15,8 +32,12 @@ export const getAirtableRecords = async (tableName: string) => {
           fetchNextPage()
         },
         function done(err) {
-          if (err) reject(err)
-          else resolve(records)
+          if (err) {
+            console.error('Airtable error:', err)
+            resolve([]) // Return empty array instead of rejecting
+          } else {
+            resolve(records)
+          }
         }
       )
   })
@@ -30,12 +51,17 @@ export interface Snap {
     "snap content"?: string;
     mentioned?: string;
     "submitted by"?: string;
-    attachment?: any; // Airtable attachments are objects with url, filename, etc.
+    attachment?: any;
   };
 }
 
 // Fetch all snaps from the "snaps" table
 export const fetchUserSnaps = async (): Promise<Snap[]> => {
+  if (!base) {
+    console.warn('Airtable not initialized - returning empty array')
+    return []
+  }
+
   try {
     const records = await getAirtableRecords('snaps') as Snap[];
     return records;
@@ -47,6 +73,11 @@ export const fetchUserSnaps = async (): Promise<Snap[]> => {
 
 // Optional: If you need to filter by who submitted
 export const fetchSnapsByUser = async (submittedBy: string): Promise<Snap[]> => {
+  if (!base) {
+    console.warn('Airtable not initialized - returning empty array')
+    return []
+  }
+
   try {
     const records: Snap[] = []
     return new Promise((resolve, reject) => {
@@ -61,8 +92,12 @@ export const fetchSnapsByUser = async (submittedBy: string): Promise<Snap[]> => 
             fetchNextPage()
           },
           function done(err) {
-            if (err) reject(err)
-            else resolve(records)
+            if (err) {
+              console.error('Airtable filter error:', err)
+              resolve([]) // Return empty array instead of rejecting
+            } else {
+              resolve(records)
+            }
           }
         )
     })
