@@ -1096,7 +1096,6 @@ return (
           <TeamResources />
 
           {/* Team Avatar Gallery */}
-          <TeamAvatarGallery />
         </section>
       </div>
 
