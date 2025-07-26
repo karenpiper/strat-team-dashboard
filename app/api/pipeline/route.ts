@@ -43,11 +43,8 @@ export async function GET() {
 
     return NextResponse.json(transformedRecords)
   } catch (error) {
-    console.error('Error fetching pipeline data:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch pipeline data' },
-      { status: 500 }
-    )
+    console.error("Pipeline API Error:", error)
+    return NextResponse.json([])
   }
 }
 
