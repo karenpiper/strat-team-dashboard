@@ -49,17 +49,10 @@ import { useAirtableUser } from "@/use-airtable-user"
 import { toast } from "sonner"
 import { TeamResources } from "@/components/team-resources"
 import { TeamAvatarGallery } from "@/components/team-avatar-gallery"
+import { fetchUserSnaps, Snap } from '@/lib/airtable';
 
 // Types for our data
-interface Snap {
-  id: string | number
-  quote: string
-  author: string
-  mentioned: string
-  timestamp: string
-  category: string
-  attachment?: string
-}
+
 
 interface PipelineItem {
   id: string | number
