@@ -658,7 +658,7 @@ return (
                   <div className="flex items-center justify-between">
                     <CardTitle className="flex items-center gap-2 text-pink-300">
                       <Award className="h-5 w-5" />
-                      Beast Babe of the Week
+                      Beast Babe
                     </CardTitle>
                     <Dialog open={nominateDialogOpen} onOpenChange={setNominateDialogOpen}>
                       <DialogTrigger asChild>
