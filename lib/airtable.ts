@@ -4,6 +4,9 @@ import Airtable from "airtable"
 const accessToken = process.env.AIRTABLE_ACCESS_TOKEN
 const baseId = process.env.AIRTABLE_BASE_ID
 
+if (!accessToken) console.error('Missing AIRTABLE_ACCESS_TOKEN')
+if (!baseId) console.error('Missing AIRTABLE_BASE_ID')
+
 // Only initialize Airtable if we have the required credentials
 let base: any = null
 
