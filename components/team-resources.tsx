@@ -4,7 +4,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { ExternalLink, Key, Globe, Book, Zap, Users, TrendingUp, Palette, Target } from "lucide-react"
+import { 
+  ExternalLink, 
+  Key, 
+  Globe, 
+  Book, 
+  Zap, 
+  Users, 
+  TrendingUp, 
+  Palette, 
+  Target 
+} from "lucide-react"
 
 const clientResources = [
   {
@@ -164,7 +174,7 @@ const toolsPlatforms = [
     status: "Active",
   },
   {
-    name: "Figma Design System",
+    name: "Design System",
     description: "Design collaboration and prototyping platform",
     url: "https://figma.com/team/strategy",
     category: "Design",
