@@ -16,6 +16,7 @@ const nextConfig = {
     ],
     unoptimized: true,
   },
+  output: 'standalone', // ✅ Enables API routes and serverful features on Vercel
 }
 
 export default nextConfig

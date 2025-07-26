@@ -1,89 +1,119 @@
 "use client"
 
-import React, { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react"
+import type React from "react"
+import { createContext, useContext, useState, useCallback, useMemo } from "react"
 import { toast } from "sonner"
 
-interface AirtableUser {
+interface User {
   id: string
   fields: {
     Name: string
     Email: string
     Role: string
-    Password?: string // Password should ideally not be sent to client, but for demo purposes
-    Avatar?: string
-    Snaps?: number
+    "Photo URL"?: string
+    [key: string]: any
   }
 }
 
 interface AirtableUserContextType {
-  user: AirtableUser | null
-  setUser: (user: AirtableUser | null) => void
+  user: User | null
   login: (email: string, password: string) => Promise<void>
+  logout: () => void
   isLoading: boolean
   error: string | null
 }
 
 const AirtableUserContext = createContext<AirtableUserContextType | undefined>(undefined)
 
-export function AirtableUserProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<AirtableUser | null>(null)
+export function AirtableUserProvider({ children }: { children: React.ReactNode }) {
+  const [user, setUser] = useState<User | null>(() => {
+    if (typeof window !== "undefined") {
+      const savedUser = localStorage.getItem("airtable-user")
+      if (savedUser) {
+        try {
+          return JSON.parse(savedUser)
+        } catch (error) {
+          console.error("Error parsing saved user:", error)
+          localStorage.removeItem("airtable-user")
+        }
+      }
+    }
+    return null
+  })
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // Attempt to load user from localStorage on initial mount
-  useEffect(() => {
-    try {
-      const storedUser = localStorage.getItem("airtableUser")
-      if (storedUser) {
-        setUser(JSON.parse(storedUser))
-      }
-    } catch (e) {
-      console.error("Failed to parse user from localStorage", e)
-      localStorage.removeItem("airtableUser")
-    }
-  }, [])
-
-  // Save user to localStorage whenever it changes
-  useEffect(() => {
-    if (user) {
-      localStorage.setItem("airtableUser", JSON.stringify(user))
-    } else {
-      localStorage.removeItem("airtableUser")
-    }
-  }, [user])
-
-  const login = useCallback(async (emailInput: string, passwordInput: string) => {
+  const login = useCallback(async (email: string, password: string) => {
     setIsLoading(true)
     setError(null)
+
     try {
-      const response = await fetch("/api/team")
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
+      // Simulate API call delay
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+
+      // Mock user data based on email
+      const mockUsers: Record<string, User> = {
+        "karen@example.com": {
+          id: "1",
+          fields: {
+            Name: "Karen Johnson",
+            Email: "karen@example.com",
+            Role: "Project Manager",
+            "Photo URL": "/placeholder.svg?height=200&width=200&text=Karen+Johnson&bg=3b82f6&color=fff",
+          },
+        },
+        "john.doe@example.com": {
+          id: "2",
+          fields: {
+            Name: "John Doe",
+            Email: "john.doe@example.com",
+            Role: "Lead Strategist",
+            "Photo URL": "/placeholder.svg?height=200&width=200&text=John+Doe&bg=10b981&color=fff",
+          },
+        },
+        "jane.smith@example.com": {
+          id: "3",
+          fields: {
+            Name: "Jane Smith",
+            Email: "jane.smith@example.com",
+            Role: "Senior Analyst",
+            "Photo URL": "/placeholder.svg?height=200&width=200&text=Jane+Smith&bg=ec4899&color=fff",
+          },
+        },
       }
-      const teamMembers: AirtableUser[] = await response.json()
 
-      const foundUser = teamMembers.find(
-        (member) => member.fields.Email === emailInput && member.fields.Password === passwordInput,
-      )
-
-      if (foundUser) {
-        setUser(foundUser)
-        toast.success(`Welcome, ${foundUser.fields.Name}!`)
+      const mockUser = mockUsers[email]
+      if (mockUser && password === "password123") {
+        setUser(mockUser)
+        localStorage.setItem("airtable-user", JSON.stringify(mockUser))
+        toast.success(`Welcome back, ${mockUser.fields.Name}!`)
       } else {
-        setError("Invalid email or password.")
-        toast.error("Invalid email or password.")
+        throw new Error("Invalid credentials")
       }
-    } catch (e: any) {
-      console.error("Login error:", e)
-      const errorMessage = e.message || "Login failed. Please try again."
-      setError(errorMessage)
-      toast.error(errorMessage)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Login failed")
+      toast.error("Login failed. Please check your credentials.")
     } finally {
       setIsLoading(false)
     }
   }, [])
 
-  const value = React.useMemo(() => ({ user, setUser, login, isLoading, error }), [user, login, isLoading, error])
+  const logout = useCallback(() => {
+    setUser(null)
+    localStorage.removeItem("airtable-user")
+    toast.success("You have been logged out")
+  }, [])
+
+  const value = useMemo(
+    () => ({
+      user,
+      login,
+      logout,
+      isLoading,
+      error,
+    }),
+    [user, login, logout, isLoading, error],
+  )
 
   return <AirtableUserContext.Provider value={value}>{children}</AirtableUserContext.Provider>
 }

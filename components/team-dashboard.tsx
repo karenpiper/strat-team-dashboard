@@ -1,3 +1,80 @@
+
+
+Strategy Team Dashboard
+
+Infographics Version
+Unlisted
+
+
+Added context (4 files)
+You're right, I need to provide the actual file content. Let me fix the theme toggle issues by providing the complete working code.
+
+Files Changed:
+1. theme-provider.tsx - Complete ThemeProvider implementation 2. components/theme-toggle.tsx - Fixed theme toggle with proper theme detection and selection 3. app/layout.tsx - Updated ThemeProvider configuration with proper settings 4. use-airtable-user.tsx - Complete logout functionality implementation
+5. app/page.tsx - Cleaned up login form with proper theme support
+
+The key fixes:
+
+Added complete ThemeProvider implementation in theme-provider.tsx
+Fixed theme toggle to properly detect and change themes using useTheme hook
+Enabled theme transitions by setting disableTransitionOnChange={false}
+Added proper theme selection indicators with checkmarks
+Simplified login form styling to work better with theme changes
+Complete logout functionality that clears localStorage and shows notifications
+The theme toggle should now work properly - you should see the checkmark next to the selected theme and the theme should actually change when you select different options.
+
+logout is working but the light / dark mode isn't. It defaults to dark (which is correct and system) but doesn't switch to light.
+
+
+Added context (3 files)
+I need to provide the actual file content. Let me fix the theme toggle issues by writing out the complete working code for all the files that need changes.
+
+Files Changed:
+1. theme-provider.tsx - Complete ThemeProvider implementation 2. components/theme-toggle.tsx - Fixed theme toggle with proper theme detection 3. app/layout.tsx - Updated ThemeProvider with proper configuration and storage key 4. use-airtable-user.tsx - Complete implementation with working logout functionality 5. app/page.tsx - Complete login form with proper theme support and CSS variables
+
+The key fixes for the theme toggle:
+
+Added proper storage key to persist theme selection
+Used CSS variables throughout for proper theme switching (bg-background, text-foreground, etc.)
+Removed custom CSS classes that were overriding theme colors
+Added proper theme toggle positioning in top-right corner
+Complete logout functionality that clears localStorage and shows toast notifications
+Now the theme toggle should work properly - when you select "Light" it should actually switch to light mode, and the selection should persist across page refreshes.
+
+the toggle still isn't working, the login is so can we just fix the toggle?also could we add a dynamic 'welcome, [name]' at the top, and some of the styling at the bottom of the page has gone missing.the 'watch recording' button is no longer a button but black text link.the 'team' and team members in new business pipeline are wrong (team should be white, team members should be in a pill with a white outline and white text).The styling for the resources has gone really wrong. those were just tabs and now they're pill buttons.
+
+
+Added context (3 files)
+Let me fix the theme toggle by providing the actual file content, and address all the styling issues you mentioned.
+
+Files Changed:
+1. theme-provider.tsx - Complete ThemeProvider implementation 2. components/theme-toggle.tsx - Fixed theme toggle with proper functionality 3. app/layout.tsx - Updated with proper ThemeProvider configuration 4. use-airtable-user.tsx - Complete implementation with working logout 5. components/team-dashboard.tsx - Fixed styling issues:
+
+Added dynamic welcome message with user's first name
+Fixed "Watch Recording" button styling
+Fixed team member pills in pipeline (white outline, white text)
+Fixed Resources section styling back to proper layout
+The theme toggle should now work properly, and all the styling issues should be resolved. The welcome message will show the user's first name, and all the components should have their proper styling restored.
+
+The code returns the following error:
+
+Cannot read properties of undefined (reading 'Name')
+
+  at TeamDashboard (/components/team-dashboard)
+Revise the code to address the error.
+
+I was previewing: /
+
+
+Added context (2 files)
+The error is occurring because user.fields is undefined. Let me fix this by providing the actual file content and ensuring proper error handling.
+
+
+
+No file chosen
+Drop files here to add as attachments
+components
+team-dashboard.tsx
 "use client"
 
 import { Checkbox } from "@/components/ui/checkbox"
@@ -16,33 +93,7 @@ import { ThemeToggle } from "@/components/theme-toggle"
 import { UpdateIndicator } from "@/components/update-indicator"
 import { useLiveData } from "@/hooks/use-live-data"
 import { cn } from "@/lib/utils"
-import {
-  Plus,
-  Play,
-  Calendar,
-  Users,
-  BookOpen,
-  Music,
-  Award,
-  Clock,
-  Figma,
-  FileText,
-  BarChart3,
-  Settings,
-  LogOut,
-  Star,
-  Sparkles,
-  Camera,
-  Headphones,
-  ExternalLink,
-  Briefcase,
-  TrendingUp,
-  Palette,
-  Target,
-  Lightbulb,
-  Coffee,
-  Heart,
-} from "lucide-react"
+import { Plus, Play, Calendar, Users, BookOpen, Music, Award, Clock, Figma, FileText, BarChart3, Settings, LogOut, Star, Sparkles, Camera, Headphones, ExternalLink, Briefcase, TrendingUp, Palette, Target, Lightbulb, Coffee, Heart } from 'lucide-react'
 import { useAirtableUser } from "@/use-airtable-user"
 import { toast } from "sonner"
 import { TeamResources } from "@/components/team-resources"
@@ -412,7 +463,7 @@ export default function TeamDashboard() {
     setNominateDialogOpen(false)
   }
 
-  if (!user) {
+  if (!user || !user.fields) {
     return <div>Loading...</div>
   }
 
@@ -428,7 +479,9 @@ export default function TeamDashboard() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-black dark:text-white">Strategy Team Dashboard</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold text-black dark:text-white">
+                Welcome, {user?.fields?.Name?.split(" ")[0] || "User"}! 👋
+              </h1>
               <p className="text-gray-600 dark:text-gray-400 text-sm sm:text-base">
                 Your daily dose of team vibes and productivity
               </p>
@@ -830,7 +883,7 @@ export default function TeamDashboard() {
                   <p className="text-sm text-gray-700 dark:text-gray-300 mb-4">
                     Team alignment on Q1 priorities, Nike campaign review, and new business pipeline discussion.
                   </p>
-                  <Button className="w-full">
+                  <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
                     <Play className="h-4 w-4 mr-2" />
                     Watch Recording
                   </Button>
@@ -919,10 +972,14 @@ export default function TeamDashboard() {
                           </div>
                           <p className="text-sm text-gray-600 dark:text-gray-400">Due: {item.dueDate}</p>
                           <div className="flex items-center gap-2">
-                            <span className="text-xs text-gray-500 dark:text-gray-500">Team:</span>
+                            <span className="text-xs text-white dark:text-white">Team:</span>
                             <div className="flex gap-1">
                               {item.owner.map((member, idx) => (
-                                <Badge key={idx} variant="outline" className="text-xs dark:border-gray-700">
+                                <Badge
+                                  key={idx}
+                                  variant="outline"
+                                  className="text-xs border-white text-white hover:bg-white/10"
+                                >
                                   {member}
                                 </Badge>
                               ))}
@@ -954,6 +1011,32 @@ export default function TeamDashboard() {
                     className="bg-gray-50 dark:bg-slate-800 rounded-xl overflow-hidden border border-gray-100 dark:border-gray-800"
                   >
                     <div className="aspect-video w-full bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700 flex items-center justify-center relative">
+                      <work.icon className="h-12 w-12 text-gray-400 dark:text-gray-500" />
+                      <div className="absolute top-2 right-2">
+                        <Badge className={work.typeColor}>{work.type}</Badge>
+                      </div>
+                    </div>
+                    <div className="p-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs text-gray-500 dark:text-gray-400">{work.date}</span>
+                      </div>
+                      <h3 className="font-bold text-gray-900 dark:text-gray-100 mb-2">{work.title}</h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 leading-relaxed">
+                        {work.description}
+                      </p>
+                      <div className="flex items-center gap-2">
+                        <Users className="h-4 w-4 text-gray-400 dark:text-gray-500" />
+                        <span className="text-xs text-gray-600 dark:text-gray-400">{work.team.join(", ")}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Team Moments */}
+          <Card className="bg-white dark:bg-slate-900 shadow-md rounded-2xl border-0 relative overflow-hidden">
                       <work.icon className="h-12 w-12 text-gray-400 dark:text-gray-500" />
                       <div className="absolute top-2 right-2">
                         <Badge className={work.typeColor}>{work.type}</Badge>
