@@ -1,8 +1,32 @@
-const baseId = process.env.AIRTABLE_BASE_ID;
-const accessToken = process.env.AIRTABLE_ACCESS_TOKEN;
+import Airtable from "airtable"
 
-if (!baseId) console.error("Missing AIRTABLE_BASE_ID");
-if (!accessToken) console.error("Missing AIRTABLE_ACCESS_TOKEN");
+const airtableApiKey = process.env.AIRTABLE_API_KEY || process.env.AIRTABLE_ACCESS_TOKEN
+const airtableBaseId = process.env.AIRTABLE_BASE_ID
+
+if (!airtableApiKey) {
+  console.warn("AIRTABLE_API_KEY is not set. Airtable integration will not work.")
+}
+if (!airtableBaseId) {
+  console.warn("AIRTABLE_BASE_ID is not set. Airtable integration will not work.")
+}
+
+Airtable.configure({ apiKey: airtableApiKey })
+const base = airtableApiKey && airtableBaseId ? Airtable.base(airtableBaseId) : null
+
+export function getAirtableTable(tableName: string) {
+  if (!base) {
+    console.error(`Airtable not configured. Cannot access table: ${tableName}`)
+    return {
+      select: () => ({ firstPage: async () => [] }),
+      find: async () => null,
+      create: async () => ({ id: "mock-id", fields: {} }),
+      update: async () => ({ id: "mock-id", fields: {} }),
+    }
+  }
+  return base(tableName)
+}
+
+// ------------ Type Definitions ------------
 
 export interface Snap {
   id: string;
@@ -15,49 +39,32 @@ export interface Snap {
   };
 }
 
-export const fetchUserSnaps = async (): Promise<Snap[]> => {
+// ------------ Snap Fetchers ------------
+
+export async function fetchUserSnaps(): Promise<Snap[]> {
   try {
-    const res = await fetch(`https://api.airtable.com/v0/${baseId}/snaps`, {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        "Content-Type": "application/json",
-      },
-    });
-
-    if (!res.ok) {
-      console.error("Airtable API error:", await res.text());
-      return [];
-    }
-
-    const data = await res.json();
-    return data.records as Snap[];
+    const table = getAirtableTable("snaps")
+    const records = await table.select({ view: "Grid view" }).firstPage()
+    return records as Snap[]
   } catch (err) {
-    console.error("Failed to fetch snaps:", err);
-    return [];
+    console.error("Failed to fetch snaps:", err)
+    return []
   }
-};
+}
 
-export const fetchSnapsByUser = async (submittedBy: string): Promise<Snap[]> => {
+export async function fetchSnapsByUser(submittedBy: string): Promise<Snap[]> {
   try {
-    const res = await fetch(
-      `https://api.airtable.com/v0/${baseId}/snaps?filterByFormula=${encodeURIComponent(`{submitted by} = "${submittedBy}"`)}`,
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    const table = getAirtableTable("snaps")
+    const records = await table
+      .select({
+        view: "Grid view",
+        filterByFormula: `{submitted by} = "${submittedBy}"`,
+      })
+      .firstPage()
 
-    if (!res.ok) {
-      console.error("Airtable API error:", await res.text());
-      return [];
-    }
-
-    const data = await res.json();
-    return data.records as Snap[];
+    return records as Snap[]
   } catch (err) {
-    console.error("Failed to fetch filtered snaps:", err);
-    return [];
+    console.error("Failed to fetch snaps by user:", err)
+    return []
   }
-};
+}
